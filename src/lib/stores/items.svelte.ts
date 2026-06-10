@@ -25,6 +25,10 @@ class ItemsStore {
 		return this.#data[listId] ?? [];
 	}
 
+	itemCount(listId: string): number {
+		return (this.#data[listId] ?? []).length;
+	}
+
 	pendingCount(listId: string): number {
 		return (this.#data[listId] ?? []).filter((i) => !i.done).length;
 	}

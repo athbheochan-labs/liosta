@@ -3,6 +3,14 @@
 	import { itemsStore } from '$lib/stores/items.svelte';
 	import { listsStore } from '$lib/stores/lists.svelte';
 
+	let {
+		isOpen = false,
+		onSelect
+	}: {
+		isOpen?: boolean;
+		onSelect?: () => void;
+	} = $props();
+
 	let editingId = $state<string | null>(null);
 	let editingName = $state('');
 	let confirmDeleteId = $state<string | null>(null);
@@ -30,9 +38,18 @@
 		const list = listsStore.create();
 		startEdit(list);
 	}
+
+	function selectList(id: string) {
+		listsStore.setActive(id);
+		onSelect?.();
+	}
 </script>
 
-<aside class="w-70 shrink-0 flex flex-col h-dvh border-r border-ink/10">
+<aside
+	class="fixed inset-y-0 left-0 z-40 w-70 shrink-0 flex flex-col h-dvh border-r border-ink/10 bg-bg shadow-2xl transition-transform duration-200 ease-out md:static md:z-auto md:translate-x-0 md:shadow-none
+	       {isOpen ? 'translate-x-0' : '-translate-x-full'}"
+	aria-label="Roghnóir liostaí"
+>
 	<!-- Brand -->
 	<div class="px-6 pt-7 pb-4">
 		<h1 class="font-serif text-[28px] font-bold text-green leading-none">Liosta</h1>
@@ -47,7 +64,7 @@
 			{@const isActive = list.id === listsStore.activeId}
 			{@const isEditing = editingId === list.id}
 			{@const isPendingDelete = confirmDeleteId === list.id}
-			{@const pending = itemsStore.pendingCount(list.id)}
+			{@const itemCount = itemsStore.itemCount(list.id)}
 
 			<div
 				class="group flex items-center gap-1.5 rounded-xl px-3 py-2.75 transition-colors
@@ -87,7 +104,7 @@
 
 				{:else}
 					<button
-						onclick={() => listsStore.setActive(list.id)}
+						onclick={() => selectList(list.id)}
 						class="flex-1 text-left font-serif text-[15px] leading-snug
 						       {isActive ? 'text-green font-semibold' : 'text-ink'}"
 					>
@@ -115,7 +132,7 @@
 						class="shrink-0 min-w-5.5 h-5.5 rounded-full flex items-center justify-center
 						       text-[11px] font-medium tabular-nums
 						       {isActive ? 'bg-green text-[#f5f3ee]' : 'bg-ink/10 text-ink/40'}"
-					>{pending}</span>
+					>{itemCount}</span>
 				{/if}
 			</div>
 		{/each}

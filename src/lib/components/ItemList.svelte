@@ -1,9 +1,15 @@
 <script lang="ts">
-	import { LayoutGrid } from 'lucide-svelte';
+	import { LayoutGrid, Menu } from 'lucide-svelte';
 	import type { List } from '$lib/stores/lists.svelte';
 	import { itemsStore } from '$lib/stores/items.svelte';
 
-	let { list }: { list: List } = $props();
+	let {
+		list,
+		onOpenLists
+	}: {
+		list: List;
+		onOpenLists?: () => void;
+	} = $props();
 
 	let newItemName = $state('');
 
@@ -18,10 +24,22 @@
 
 <div class="flex flex-col flex-1 overflow-hidden">
 	<!-- Header -->
-	<div class="flex items-start justify-between px-8 pt-7 pb-5">
-		<h2 class="font-serif text-[32px] font-bold leading-tight text-ink">{list.name}</h2>
+	<div class="flex items-start justify-between gap-4 px-5 pt-5 pb-4 md:px-8 md:pt-7 md:pb-5">
+		<div class="flex min-w-0 items-start gap-3">
+			<button
+				type="button"
+				onclick={() => onOpenLists?.()}
+				class="mt-1 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-ink/8 text-ink/60 transition-colors hover:bg-ink/15 hover:text-ink md:hidden"
+				aria-label="Oscail liostaí"
+			>
+				<Menu size={18} />
+			</button>
+			<h2 class="min-w-0 font-serif text-[30px] font-bold leading-tight text-ink md:text-[32px]">
+				{list.name}
+			</h2>
+		</div>
 		{#if doneCount > 0}
-			<span class="mt-1 shrink-0 ml-6 text-sm text-ink/40">{doneCount} críochnaithe</span>
+			<span class="mt-1 shrink-0 text-sm text-ink/40">{doneCount} críochnaithe</span>
 		{/if}
 	</div>
 
