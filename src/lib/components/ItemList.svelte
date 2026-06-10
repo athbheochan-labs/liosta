@@ -1,6 +1,7 @@
 <script lang="ts">
-	import { LayoutGrid, Menu } from 'lucide-svelte';
+	import { LayoutGrid, Menu, X } from 'lucide-svelte';
 	import type { List } from '$lib/stores/lists.svelte';
+	import type { Item } from '$lib/stores/items.svelte';
 	import { itemsStore } from '$lib/stores/items.svelte';
 
 	let {
@@ -12,6 +13,11 @@
 	} = $props();
 
 	let newItemName = $state('');
+	let draggedItemId = $state<string | null>(null);
+	let revealedDeleteId = $state<string | null>(null);
+	let pointerStartX = 0;
+	let pointerDeltaX = $state(0);
+	let didSwipe = false;
 
 	let items = $derived(itemsStore.forList(list.id));
 	let doneCount = $derived(itemsStore.doneCount(list.id));
@@ -19,6 +25,48 @@
 	function addItem() {
 		itemsStore.add(list.id, newItemName);
 		newItemName = '';
+	}
+
+	function toggleItem(itemId: string) {
+		if (didSwipe) {
+			didSwipe = false;
+			return;
+		}
+		revealedDeleteId = null;
+		itemsStore.toggle(list.id, itemId);
+	}
+
+	function deleteItem(itemId: string) {
+		itemsStore.delete(list.id, itemId);
+		if (revealedDeleteId === itemId) revealedDeleteId = null;
+	}
+
+	function startSwipe(event: PointerEvent, itemId: string) {
+		if (event.pointerType === 'mouse' && event.button !== 0) return;
+		draggedItemId = itemId;
+		pointerStartX = event.clientX;
+		pointerDeltaX = revealedDeleteId === itemId ? -72 : 0;
+		didSwipe = false;
+	}
+
+	function moveSwipe(event: PointerEvent, itemId: string) {
+		if (draggedItemId !== itemId) return;
+		const baseOffset = revealedDeleteId === itemId ? -72 : 0;
+		const nextOffset = Math.min(0, Math.max(-88, baseOffset + event.clientX - pointerStartX));
+		pointerDeltaX = nextOffset;
+		if (Math.abs(nextOffset - baseOffset) > 8) didSwipe = true;
+	}
+
+	function endSwipe(itemId: string) {
+		if (draggedItemId !== itemId) return;
+		revealedDeleteId = pointerDeltaX < -36 ? itemId : null;
+		draggedItemId = null;
+		pointerDeltaX = 0;
+	}
+
+	function rowOffset(item: Item): number {
+		if (draggedItemId === item.id) return pointerDeltaX;
+		return revealedDeleteId === item.id ? -72 : 0;
 	}
 </script>
 
@@ -49,7 +97,7 @@
 			type="text"
 			bind:value={newItemName}
 			onkeydown={(e) => e.key === 'Enter' && addItem()}
-			placeholder="Cuir mír leis..."
+			placeholder="Cuir mír leis"
 			class="flex-1 rounded-xl bg-ink text-bg placeholder:text-bg/40
 			       px-5 py-4 text-sm font-medium outline-none"
 		/>
@@ -66,27 +114,72 @@
 	<div class="mx-6 h-px bg-ink/10"></div>
 
 	<!-- Items -->
-	<ul class="flex-1 overflow-y-auto px-8">
+	<ul class="flex-1 overflow-y-auto px-5 md:px-8">
 		{#each items as item (item.id)}
-			<li class="flex items-center gap-4 py-5 border-b border-ink/6 last:border-0">
-				{#if item.done}
+			<li class="relative overflow-hidden border-b border-ink/6 last:border-0">
+				<button
+					type="button"
+					onclick={(event) => {
+						event.stopPropagation();
+						deleteItem(item.id);
+					}}
+					class="absolute inset-y-0 right-0 flex w-[72px] items-center justify-center bg-green text-[#f5f3ee]"
+					aria-label="Scrios {item.name}"
+				>
+					<X size={18} />
+				</button>
+
+				<div
+					role="button"
+					tabindex="0"
+					onclick={() => toggleItem(item.id)}
+					onkeydown={(event) => {
+						if (event.key === 'Enter' || event.key === ' ') {
+							event.preventDefault();
+							toggleItem(item.id);
+						}
+					}}
+					onpointerdown={(event) => startSwipe(event, item.id)}
+					onpointermove={(event) => moveSwipe(event, item.id)}
+					onpointerup={() => endSwipe(item.id)}
+					onpointercancel={() => endSwipe(item.id)}
+					style:transform={`translateX(${rowOffset(item)}px)`}
+					class="relative z-10 flex touch-pan-y items-center gap-4 bg-bg py-5 transition-transform duration-150"
+					aria-label={item.done ? `Díchomharthaigh ${item.name}` : `Comharthaigh ${item.name}`}
+				>
 					<button
-						onclick={() => itemsStore.toggle(list.id, item.id)}
-						class="shrink-0 w-9 h-9 rounded-full bg-green flex items-center justify-center"
-						aria-label="Díchomharthaigh"
+						type="button"
+						onclick={(event) => {
+							event.stopPropagation();
+							toggleItem(item.id);
+						}}
+						class="shrink-0 w-9 h-9 rounded-full transition-colors
+						       {item.done
+							? 'bg-green flex items-center justify-center'
+							: 'border-2 border-ink/15 hover:border-ink/30'}"
+						aria-label={item.done ? 'Díchomharthaigh' : 'Comharthaigh'}
 					>
-						<LayoutGrid size={14} class="text-[#f5f3ee]" strokeWidth={1.5} />
+						{#if item.done}
+							<LayoutGrid size={14} class="text-[#f5f3ee]" strokeWidth={1.5} />
+						{/if}
 					</button>
-					<span class="flex-1 text-[15px] text-ink/35 line-through">{item.name}</span>
-				{:else}
+
+					<span class="flex-1 text-[15px] {item.done ? 'text-ink/35 line-through' : 'text-ink'}">
+						{item.name}
+					</span>
+
 					<button
-						onclick={() => itemsStore.toggle(list.id, item.id)}
-						class="shrink-0 w-9 h-9 rounded-full border-2 border-ink/15
-						       hover:border-ink/30 transition-colors"
-						aria-label="Comharthaigh"
-					></button>
-					<span class="flex-1 text-[15px] text-ink">{item.name}</span>
-				{/if}
+						type="button"
+						onclick={(event) => {
+							event.stopPropagation();
+							deleteItem(item.id);
+						}}
+						class="shrink-0 rounded-full p-2 text-ink/25 transition-colors hover:bg-ink/8 hover:text-ink/60"
+						aria-label="Scrios {item.name}"
+					>
+						<X size={15} />
+					</button>
+				</div>
 			</li>
 		{/each}
 
