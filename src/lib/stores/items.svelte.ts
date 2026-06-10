@@ -22,7 +22,7 @@ class ItemsStore {
 	#data = $state<Record<string, Item[]>>(load());
 
 	forList(listId: string): Item[] {
-		return this.#data[listId] ?? [];
+		return [...(this.#data[listId] ?? [])].sort((a, b) => Number(a.done) - Number(b.done));
 	}
 
 	itemCount(listId: string): number {
@@ -51,6 +51,14 @@ class ItemsStore {
 			[listId]: (this.#data[listId] ?? []).map((i) =>
 				i.id === itemId ? { ...i, done: !i.done } : i
 			)
+		};
+		this.#persist();
+	}
+
+	delete(listId: string, itemId: string) {
+		this.#data = {
+			...this.#data,
+			[listId]: (this.#data[listId] ?? []).filter((i) => i.id !== itemId)
 		};
 		this.#persist();
 	}
