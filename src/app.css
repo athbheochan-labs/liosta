@@ -1,0 +1,88 @@
+@import "tailwindcss";
+@import "@fontsource/crimson-pro/400.css";
+@import "@fontsource/crimson-pro/400-italic.css";
+@import "@fontsource/crimson-pro/600.css";
+@import "@fontsource/dm-sans/400.css";
+@import "@fontsource/dm-sans/500.css";
+
+/* Class-based dark mode: dark: utilities activate under .dark ancestor */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/*
+ * @theme inline — Tailwind utilities reference the CSS custom properties
+ * directly so that dark-mode overrides on :root propagate automatically.
+ */
+@theme inline {
+	--font-sans: 'DM Sans', system-ui, sans-serif;
+	--font-serif: 'Crimson Pro', Georgia, serif;
+
+	--color-bg: var(--c-bg);
+	--color-ink: var(--c-ink);
+	--color-green: var(--c-green);
+}
+
+@layer base {
+	/* ── Brand tokens ─────────────────────────────────── */
+	:root {
+		--c-bg: #f5f3ee;
+		--c-ink: #1c1c1a;
+		--c-green: #0f6e56;
+		color-scheme: light dark;
+	}
+
+	/* System dark mode — only when no explicit .light class is present */
+	@media (prefers-color-scheme: dark) {
+		:root:not(.light) {
+			--c-bg: #1c1c1a;
+			--c-ink: #f0ece3;
+			--c-green: #1a9e7a;
+		}
+	}
+
+	/* Explicit dark mode class (manual toggle) */
+	.dark {
+		--c-bg: #1c1c1a;
+		--c-ink: #f0ece3;
+		--c-green: #1a9e7a;
+	}
+
+	/* ── Reset ────────────────────────────────────────── */
+	*,
+	*::before,
+	*::after {
+		box-sizing: border-box;
+		margin: 0;
+		padding: 0;
+	}
+
+	/* ── Base styles ──────────────────────────────────── */
+	html {
+		font-family: var(--font-sans);
+		background-color: var(--c-bg);
+		color: var(--c-ink);
+		-webkit-font-smoothing: antialiased;
+		-moz-osx-font-smoothing: grayscale;
+		text-size-adjust: 100%;
+	}
+
+	body {
+		min-height: 100dvh;
+		line-height: 1.5;
+	}
+
+	h1,
+	h2,
+	h3,
+	h4,
+	h5,
+	h6 {
+		font-family: var(--font-serif);
+		line-height: 1.2;
+	}
+
+	img,
+	svg {
+		display: block;
+		max-width: 100%;
+	}
+}
