@@ -1,2 +1,13 @@
-<h1>Welcome to SvelteKit</h1>
-<p>Visit <a href="https://svelte.dev/docs/kit">svelte.dev/docs/kit</a> to read the documentation</p>
+<script lang="ts">
+	import ItemList from '$lib/components/ItemList.svelte';
+	import ListPanel from '$lib/components/ListPanel.svelte';
+	import { listsStore } from '$lib/stores/lists.svelte';
+</script>
+
+<div class="flex h-dvh overflow-hidden bg-bg text-ink">
+	<ListPanel />
+
+	{#if listsStore.active}
+		<ItemList list={listsStore.active} />
+	{/if}
+</div>
