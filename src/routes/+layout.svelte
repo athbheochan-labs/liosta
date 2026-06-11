@@ -12,6 +12,7 @@
 	const IOS_HINT_SEEN_KEY = 'liosta_ios_install_hint_seen';
 
 	let { children } = $props();
+<<<<<<< HEAD
 	let deferredInstallPrompt = $state<InstallPromptEvent | null>(null);
 	let showInstallBanner = $state(false);
 	let showIosHint = $state(false);
@@ -85,6 +86,25 @@
 			window.removeEventListener('appinstalled', handleAppInstalled);
 		};
 	});
+||||||| 7a629a1
+=======
+	let isOffline = $state(false);
+
+	onMount(() => {
+		function syncNetworkState() {
+			isOffline = !navigator.onLine;
+		}
+
+		syncNetworkState();
+		window.addEventListener('online', syncNetworkState);
+		window.addEventListener('offline', syncNetworkState);
+
+		return () => {
+			window.removeEventListener('online', syncNetworkState);
+			window.removeEventListener('offline', syncNetworkState);
+		};
+	});
+>>>>>>> origin/main
 </script>
 
 <svelte:head>
@@ -92,6 +112,7 @@
 </svelte:head>
 
 {@render children()}
+<<<<<<< HEAD
 
 {#if showInstallBanner || showIosHint}
 	<div
@@ -137,3 +158,16 @@
 		{/if}
 	</div>
 {/if}
+||||||| 7a629a1
+=======
+
+{#if isOffline}
+	<div
+		class="fixed inset-x-3 bottom-3 z-50 rounded-lg bg-ink px-4 py-3 text-center text-sm font-medium text-bg shadow-lg md:left-auto md:right-4 md:w-fit"
+		role="status"
+		aria-live="polite"
+	>
+		Tá tú as líne. Leanann Liosta ag obair.
+	</div>
+{/if}
+>>>>>>> origin/main
