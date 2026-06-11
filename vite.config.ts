@@ -16,6 +16,7 @@ export default defineConfig({
 			})
 		}),
 		VitePWA({
+			strategies: 'generateSW',
 			registerType: 'autoUpdate',
 			manifest: {
 				name: 'Liosta',
@@ -36,7 +37,10 @@ export default defineConfig({
 				]
 			},
 			workbox: {
-				globPatterns: ['**/*.{js,css,html,ico,png,svg,webp}']
+				cleanupOutdatedCaches: true,
+				clientsClaim: true,
+				navigateFallback: '/index.html',
+				globPatterns: ['**/*.{js,css,html,ico,png,svg,webp,woff,woff2,json,webmanifest,txt}']
 			}
 		})
 	]
