@@ -15,6 +15,8 @@
 	let newItemName = $state('');
 	let draggedItemId = $state<string | null>(null);
 	let revealedDeleteId = $state<string | null>(null);
+	let confirmClearDone = $state(false);
+	let confirmClearListId = $state('');
 	let pointerStartX = 0;
 	let pointerDeltaX = $state(0);
 	let didSwipe = false;
@@ -26,6 +28,14 @@
 		itemsStore.add(list.id, newItemName);
 		newItemName = '';
 	}
+
+	$effect(() => {
+		if (confirmClearListId !== list.id) {
+			confirmClearDone = false;
+			confirmClearListId = list.id;
+		}
+		if (doneCount === 0) confirmClearDone = false;
+	});
 
 	function toggleItem(itemId: string) {
 		if (didSwipe) {
@@ -39,6 +49,11 @@
 	function deleteItem(itemId: string) {
 		itemsStore.delete(list.id, itemId);
 		if (revealedDeleteId === itemId) revealedDeleteId = null;
+	}
+
+	function clearDoneItems() {
+		itemsStore.clearDone(list.id);
+		confirmClearDone = false;
 	}
 
 	function startSwipe(event: PointerEvent, itemId: string) {
@@ -92,23 +107,55 @@
 	</div>
 
 	<!-- Add-item input -->
-	<div class="px-6 pb-4 flex gap-2">
-		<input
-			type="text"
-			bind:value={newItemName}
-			onkeydown={(e) => e.key === 'Enter' && addItem()}
-			placeholder="Cuir mír leis"
-			class="flex-1 rounded-xl bg-ink text-bg placeholder:text-bg/40
-			       px-5 py-4 text-sm font-medium outline-none"
-		/>
-		<button
-			onclick={addItem}
-			aria-label="Cuir leis"
-			class="shrink-0 w-14 rounded-xl bg-ink/8 hover:bg-ink/15 transition-colors
-			       flex items-center justify-center text-ink/50 hover:text-ink"
-		>
-			<span class="text-base leading-none">↑</span>
-		</button>
+	<div class="px-5 pb-4 md:px-6">
+		<div class="flex gap-2">
+			<input
+				type="text"
+				bind:value={newItemName}
+				onkeydown={(e) => e.key === 'Enter' && addItem()}
+				placeholder="Cuir mír leis"
+				class="flex-1 rounded-xl bg-ink text-bg placeholder:text-bg/40
+				       px-5 py-4 text-sm font-medium outline-none"
+			/>
+			<button
+				onclick={addItem}
+				aria-label="Cuir leis"
+				class="shrink-0 w-14 rounded-xl bg-ink/8 hover:bg-ink/15 transition-colors
+				       flex items-center justify-center text-ink/50 hover:text-ink"
+			>
+				<span class="text-base leading-none">↑</span>
+			</button>
+		</div>
+
+		{#if doneCount > 0}
+			<div class="mt-3 flex flex-wrap items-center gap-3">
+				{#if confirmClearDone}
+					<span class="text-sm text-ink/45">Scrios na míreanna críochnaithe?</span>
+					<button
+						type="button"
+						onclick={clearDoneItems}
+						class="text-sm font-medium text-green hover:text-green/80 transition-colors"
+					>
+						Deimhnigh
+					</button>
+					<button
+						type="button"
+						onclick={() => (confirmClearDone = false)}
+						class="text-sm text-ink/40 hover:text-ink/70 transition-colors"
+					>
+						Cealaigh
+					</button>
+				{:else}
+					<button
+						type="button"
+						onclick={() => (confirmClearDone = true)}
+						class="rounded-full bg-ink/8 px-3 py-1.5 text-sm text-ink/55 hover:bg-ink/12 hover:text-ink/75 transition-colors"
+					>
+						Glan míreanna críochnaithe
+					</button>
+				{/if}
+			</div>
+		{/if}
 	</div>
 
 	<div class="mx-6 h-px bg-ink/10"></div>
@@ -188,16 +235,4 @@
 		{/if}
 	</ul>
 
-	<!-- Footer -->
-	{#if doneCount > 0}
-		<div class="border-t border-ink/10 px-8 py-5 flex items-center justify-between">
-			<span class="text-sm text-ink/50">{doneCount} mír críochnaithe</span>
-			<button
-				onclick={() => itemsStore.clearDone(list.id)}
-				class="text-sm text-ink/40 hover:text-ink/70 transition-colors"
-			>
-				Glan
-			</button>
-		</div>
-	{/if}
 </div>
