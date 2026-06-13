@@ -1,42 +1,66 @@
-# sv
+# Liosta
 
-Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
+![Liosta banner](./static/readme-banner.png)
 
-## Creating a project
+Liosta is a small offline-first list app in Irish. It supports multiple lists, item counts, checked items, local persistence, PWA install, and Android packaging through Capacitor.
 
-If you're seeing this, you've probably already done this step. Congrats!
+## Cad e Liosta?
+
+Liosta is for quick everyday lists: shopping, tasks, notes, or anything that benefits from a simple checked/unchecked flow. Data is stored locally in the browser with `localStorage`, so the app keeps working offline after the shell has been cached.
+
+## Suiteail
+
+Install dependencies:
 
 ```sh
-# create a new project
-npx sv create my-app
+npm install
 ```
 
-To recreate this project with the same configuration:
-
-```sh
-# recreate this project
-npx sv@0.16.1 create --template minimal --types ts --add sveltekit-adapter="adapter:static" --no-download-check --install npm .
-```
-
-## Developing
-
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
+Start the development server:
 
 ```sh
 npm run dev
-
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
 ```
 
-## Building
+Run type and Svelte checks:
 
-To create a production version of your app:
+```sh
+npm run check
+```
+
+## Togail
+
+Build the web app:
 
 ```sh
 npm run build
 ```
 
-You can preview the production build with `npm run preview`.
+Preview the production build:
 
-> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
+```sh
+npm run preview
+```
+
+Build and sync the Android project:
+
+```sh
+npm run build
+npx cap sync android
+```
+
+Open Android Studio:
+
+```sh
+npx cap open android
+```
+
+Build an Android debug APK from the command line:
+
+```sh
+./android/gradlew -p android :app:assembleDebug
+```
+
+## Ceadunas
+
+MIT. See [LICENSE](./LICENSE).
