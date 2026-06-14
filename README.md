@@ -61,6 +61,28 @@ Build an Android debug APK from the command line:
 ./android/gradlew -p android :app:assembleDebug
 ```
 
+## Foilsiu
+
+AWS Amplify Hosting uses the repo-level [`amplify.yml`](./amplify.yml) file:
+
+- Build command: `npm run build`
+- Output directory: `build`
+- Install command: `npm ci`
+
+In Amplify, connect the `athbheochan-labs/liosta` repository and add the custom domain `liosta.athbheochan.irish`. If the domain is managed in Route 53, Amplify can create the required DNS records automatically.
+
+Add this rewrite rule in Amplify Hosting so direct page loads fall back to the static SvelteKit app shell:
+
+| Source address | Target address | Type |
+| --- | --- | --- |
+| `</^[^.]+$|\.(?!(css|gif|ico|jpg|js|png|svg|txt|webmanifest|woff|woff2)$)([^.]+$)/>` | `/index.html` | `200 (Rewrite)` |
+
+After deployment, verify:
+
+- `https://liosta.athbheochan.irish/manifest.webmanifest` returns HTTP 200.
+- `https://liosta.athbheochan.irish/sw.js` returns HTTP 200 with JavaScript content.
+- The app is served over HTTPS and can be installed as a PWA.
+
 ## Ceadunas
 
 MIT. See [LICENSE](./LICENSE).
