@@ -134,7 +134,7 @@
 					<span
 						class="shrink-0 min-w-5.5 h-5.5 rounded-full flex items-center justify-center
 						       text-[11px] font-medium tabular-nums
-						       {isActive ? 'bg-green text-[#f5f3ee]' : 'bg-ink/10 text-ink/40'}"
+						       {isActive ? 'bg-green text-bg' : 'bg-ink/10 text-ink/40'}"
 					>{itemCount}</span>
 				{/if}
 			</div>

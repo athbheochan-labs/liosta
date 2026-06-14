@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { getContext } from 'svelte';
-	import { LayoutGrid, Menu, X } from 'lucide-svelte';
+	import { LayoutGrid, Menu, Moon, Sun, X } from 'lucide-svelte';
 	import type { List } from '$lib/stores/lists.svelte';
 	import type { Item } from '$lib/stores/items.svelte';
 	import { itemsStore } from '$lib/stores/items.svelte';
@@ -9,7 +9,13 @@
 		readonly active: boolean;
 	};
 
+	type ThemeContext = {
+		readonly theme: 'light' | 'dark';
+		toggleTheme: () => void;
+	};
+
 	const tour = getContext<TourContext | undefined>('liosta-tour');
+	const theme = getContext<ThemeContext | undefined>('liosta-theme');
 	const demoItems: Item[] = [
 		{ id: 'tour-demo-active', name: 'Bainne', done: false },
 		{ id: 'tour-demo-done', name: 'Arán', done: true }
@@ -122,9 +128,24 @@
 				{list.name}
 			</h2>
 		</div>
-		{#if doneCount > 0}
-			<span class="mt-1 shrink-0 text-sm text-ink/40">{doneCount} críochnaithe</span>
-		{/if}
+		<div class="flex shrink-0 items-center gap-3">
+			{#if doneCount > 0}
+				<span class="text-sm text-ink/40">{doneCount} críochnaithe</span>
+			{/if}
+			<button
+				type="button"
+				onclick={() => theme?.toggleTheme()}
+				class="flex h-9 w-9 items-center justify-center rounded-xl bg-ink/8 text-ink/60 transition-colors hover:bg-ink/15 hover:text-ink"
+				aria-label={theme?.theme === 'dark' ? 'Athraigh go mód geal' : 'Athraigh go mód dorcha'}
+				title={theme?.theme === 'dark' ? 'Mód geal' : 'Mód dorcha'}
+			>
+				{#if theme?.theme === 'dark'}
+					<Sun size={17} />
+				{:else}
+					<Moon size={17} />
+				{/if}
+			</button>
+		</div>
 	</div>
 
 	<!-- Add-item input -->
@@ -135,8 +156,9 @@
 				bind:value={newItemName}
 				onkeydown={(e) => e.key === 'Enter' && addItem()}
 				placeholder="Cuir mír leis"
-				class="flex-1 rounded-xl bg-ink text-bg placeholder:text-bg/40
-				       px-5 py-4 text-sm font-medium outline-none"
+				class="flex-1 rounded-xl bg-ink/8 text-ink placeholder:text-ink/35
+				       px-5 py-4 text-sm font-medium outline-none transition-colors
+				       focus:bg-bg focus:ring-2 focus:ring-green/35"
 			/>
 			<button
 				onclick={addItem}
@@ -191,7 +213,7 @@
 						event.stopPropagation();
 						deleteItem(item.id);
 					}}
-					class="absolute inset-y-0 right-0 flex w-[72px] items-center justify-center bg-green text-[#f5f3ee]"
+					class="absolute inset-y-0 right-0 flex w-[72px] items-center justify-center bg-green text-bg"
 					aria-label="Scrios {item.name}"
 				>
 					<X size={18} />
@@ -228,7 +250,7 @@
 						aria-label={item.done ? 'Díchomharthaigh' : 'Comharthaigh'}
 					>
 						{#if item.done}
-							<LayoutGrid size={14} class="text-[#f5f3ee]" strokeWidth={1.5} />
+							<LayoutGrid size={14} class="text-bg" strokeWidth={1.5} />
 						{/if}
 					</button>
 
