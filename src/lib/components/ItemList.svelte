@@ -1,8 +1,19 @@
 <script lang="ts">
+	import { getContext } from 'svelte';
 	import { LayoutGrid, Menu, X } from 'lucide-svelte';
 	import type { List } from '$lib/stores/lists.svelte';
 	import type { Item } from '$lib/stores/items.svelte';
 	import { itemsStore } from '$lib/stores/items.svelte';
+
+	type TourContext = {
+		readonly active: boolean;
+	};
+
+	const tour = getContext<TourContext | undefined>('liosta-tour');
+	const demoItems: Item[] = [
+		{ id: 'tour-demo-active', name: 'Bainne', done: false },
+		{ id: 'tour-demo-done', name: 'Arán', done: true }
+	];
 
 	let {
 		list,
@@ -21,8 +32,11 @@
 	let pointerDeltaX = $state(0);
 	let didSwipe = false;
 
-	let items = $derived(itemsStore.forList(list.id));
-	let doneCount = $derived(itemsStore.doneCount(list.id));
+	let storedItems = $derived(itemsStore.forList(list.id));
+	let storedDoneCount = $derived(itemsStore.doneCount(list.id));
+	let showTourDemo = $derived(Boolean(tour?.active) && storedDoneCount === 0);
+	let items = $derived(showTourDemo ? demoItems : storedItems);
+	let doneCount = $derived(showTourDemo ? 1 : storedDoneCount);
 
 	function addItem() {
 		itemsStore.add(list.id, newItemName);
@@ -38,6 +52,7 @@
 	});
 
 	function toggleItem(itemId: string) {
+		if (showTourDemo) return;
 		if (didSwipe) {
 			didSwipe = false;
 			return;
@@ -47,16 +62,19 @@
 	}
 
 	function deleteItem(itemId: string) {
+		if (showTourDemo) return;
 		itemsStore.delete(list.id, itemId);
 		if (revealedDeleteId === itemId) revealedDeleteId = null;
 	}
 
 	function clearDoneItems() {
+		if (showTourDemo) return;
 		itemsStore.clearDone(list.id);
 		confirmClearDone = false;
 	}
 
 	function startSwipe(event: PointerEvent, itemId: string) {
+		if (showTourDemo) return;
 		if (event.pointerType === 'mouse' && event.button !== 0) return;
 		draggedItemId = itemId;
 		pointerStartX = event.clientX;
@@ -65,6 +83,7 @@
 	}
 
 	function moveSwipe(event: PointerEvent, itemId: string) {
+		if (showTourDemo) return;
 		if (draggedItemId !== itemId) return;
 		const baseOffset = revealedDeleteId === itemId ? -72 : 0;
 		const nextOffset = Math.min(0, Math.max(-88, baseOffset + event.clientX - pointerStartX));
@@ -73,6 +92,7 @@
 	}
 
 	function endSwipe(itemId: string) {
+		if (showTourDemo) return;
 		if (draggedItemId !== itemId) return;
 		revealedDeleteId = pointerDeltaX < -36 ? itemId : null;
 		draggedItemId = null;
@@ -94,6 +114,7 @@
 				onclick={() => onOpenLists?.()}
 				class="mt-1 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-ink/8 text-ink/60 transition-colors hover:bg-ink/15 hover:text-ink md:hidden"
 				aria-label="Oscail liostaí"
+				data-tour="open-lists"
 			>
 				<Menu size={18} />
 			</button>
@@ -107,7 +128,7 @@
 	</div>
 
 	<!-- Add-item input -->
-	<div class="px-5 pb-4 md:px-6">
+	<div class="px-5 pb-4 md:px-6" data-tour="add-item">
 		<div class="flex gap-2">
 			<input
 				type="text"
@@ -128,7 +149,7 @@
 		</div>
 
 		{#if doneCount > 0}
-			<div class="mt-3 flex flex-wrap items-center gap-3">
+			<div class="mt-3 flex flex-wrap items-center gap-3" data-tour="clear-done">
 				{#if confirmClearDone}
 					<span class="text-sm text-ink/45">Scrios na míreanna críochnaithe?</span>
 					<button
@@ -161,7 +182,7 @@
 	<div class="mx-6 h-px bg-ink/10"></div>
 
 	<!-- Items -->
-	<ul class="flex-1 overflow-y-auto px-5 md:px-8">
+	<ul class="flex-1 overflow-y-auto px-5 md:px-8" data-tour="item-actions">
 		{#each items as item (item.id)}
 			<li class="relative overflow-hidden border-b border-ink/6 last:border-0">
 				<button
