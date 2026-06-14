@@ -5,8 +5,8 @@
 @import "@fontsource/dm-sans/400.css";
 @import "@fontsource/dm-sans/500.css";
 
-/* Class-based dark mode: dark: utilities activate under .dark ancestor */
-@custom-variant dark (&:where(.dark, .dark *));
+/* Attribute-based dark mode: dark: utilities activate under [data-theme='dark'] */
+@custom-variant dark (&:where([data-theme='dark'], [data-theme='dark'] *));
 
 /*
  * @theme inline — Tailwind utilities reference the CSS custom properties
@@ -26,24 +26,31 @@
 	:root {
 		--c-bg: #f5f3ee;
 		--c-ink: #1c1c1a;
-		--c-green: #0f6e56;
+		--c-green: #0F6E56;
 		color-scheme: light dark;
 	}
 
-	/* System dark mode — only when no explicit .light class is present */
+	/* System dark mode fallback before the app has chosen a theme */
 	@media (prefers-color-scheme: dark) {
-		:root:not(.light) {
-			--c-bg: #1c1c1a;
+		:root:not([data-theme]) {
+			--c-bg: #151715;
 			--c-ink: #f0ece3;
-			--c-green: #1a9e7a;
+			--c-green: #3cc79b;
 		}
 	}
 
-	/* Explicit dark mode class (manual toggle) */
-	.dark {
-		--c-bg: #1c1c1a;
+	:root[data-theme='light'] {
+		--c-bg: #f5f3ee;
+		--c-ink: #1c1c1a;
+		--c-green: #0F6E56;
+		color-scheme: light;
+	}
+
+	:root[data-theme='dark'] {
+		--c-bg: #151715;
 		--c-ink: #f0ece3;
-		--c-green: #1a9e7a;
+		--c-green: #3cc79b;
+		color-scheme: dark;
 	}
 
 	/* ── Reset ────────────────────────────────────────── */

@@ -21,9 +21,16 @@
 		height: number;
 	};
 
+	type Theme = 'light' | 'dark';
+
 	const INSTALL_DISMISSED_KEY = 'liosta_install_prompt_dismissed';
 	const IOS_HINT_SEEN_KEY = 'liosta_ios_install_hint_seen';
 	const TOUR_STORAGE_KEY = 'liosta_toured';
+	const THEME_STORAGE_KEY = 'liosta_theme';
+	const THEME_COLOR = {
+		light: '#0F6E56',
+		dark: '#151715'
+	};
 
 	const tourSteps: TourStep[] = [
 		{
@@ -74,6 +81,7 @@
 	let tourTargetRect = $state<TourRect | null>(null);
 	let tourPopoverStyle = $state('');
 	let tourCardWidth = $state(360);
+	let theme = $state<Theme>('light');
 
 	let activeTourStep = $derived(tourSteps[tourStepIndex]);
 	let isLastTourStep = $derived(tourStepIndex === tourSteps.length - 1);
@@ -83,6 +91,33 @@
 			return showTour;
 		}
 	});
+
+	setContext('liosta-theme', {
+		get theme() {
+			return theme;
+		},
+		toggleTheme
+	});
+
+	function applyTheme(nextTheme: Theme) {
+		theme = nextTheme;
+		document.documentElement.dataset.theme = nextTheme;
+		document
+			.querySelector('meta[name="theme-color"]')
+			?.setAttribute('content', THEME_COLOR[nextTheme]);
+	}
+
+	function storedOrPreferredTheme(): Theme {
+		const storedTheme = localStorage.getItem(THEME_STORAGE_KEY);
+		if (storedTheme === 'light' || storedTheme === 'dark') return storedTheme;
+		return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+	}
+
+	function toggleTheme() {
+		const nextTheme = theme === 'dark' ? 'light' : 'dark';
+		applyTheme(nextTheme);
+		localStorage.setItem(THEME_STORAGE_KEY, nextTheme);
+	}
 
 	function isStandalone() {
 		const navigatorWithStandalone = navigator as Navigator & { standalone?: boolean };
@@ -227,6 +262,7 @@
 			void updateTourTarget();
 		}
 
+		applyTheme(storedOrPreferredTheme());
 		syncNetworkState();
 		showTour = localStorage.getItem(TOUR_STORAGE_KEY) !== 'true';
 		window.addEventListener('online', syncNetworkState);
@@ -334,7 +370,7 @@
 
 					<button
 						type="button"
-						class="rounded-lg bg-green px-4 py-2 text-sm font-medium text-[#f5f3ee] transition-colors hover:bg-green/85"
+						class="rounded-lg bg-green px-4 py-2 text-sm font-medium text-bg transition-colors hover:bg-green/85"
 						onclick={nextTourStep}
 					>
 						{isLastTourStep ? 'Críochnaigh' : 'Ar aghaidh'}
@@ -385,7 +421,7 @@
 					<div class="mt-4 flex gap-2">
 						<button
 							type="button"
-							class="rounded-lg bg-green px-4 py-2 text-sm font-medium text-[#f5f3ee] transition-colors hover:bg-green/85"
+							class="rounded-lg bg-green px-4 py-2 text-sm font-medium text-bg transition-colors hover:bg-green/85"
 							onclick={installApp}
 						>
 							Suiteáil
