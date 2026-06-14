@@ -49,6 +49,7 @@
 	class="fixed inset-y-0 left-0 z-40 w-70 shrink-0 flex flex-col h-dvh border-r border-ink/10 bg-bg shadow-2xl transition-transform duration-200 ease-out md:static md:z-auto md:translate-x-0 md:shadow-none
 	       {isOpen ? 'translate-x-0' : '-translate-x-full'}"
 	aria-label="Roghnóir liostaí"
+	data-tour="list-switcher"
 >
 	<!-- Brand -->
 	<div class="px-6 pt-7 pb-4">
@@ -59,7 +60,7 @@
 	<div class="mx-5 h-px bg-ink/10 mb-2"></div>
 
 	<!-- List nav -->
-	<nav class="flex-1 overflow-y-auto px-3 py-1 space-y-px" aria-label="Liostaí">
+	<nav class="flex-1 overflow-y-auto px-3 py-1 space-y-px" aria-label="Liostaí" data-tour="list-nav">
 		{#each listsStore.lists as list (list.id)}
 			{@const isActive = list.id === listsStore.activeId}
 			{@const isEditing = editingId === list.id}
@@ -69,6 +70,7 @@
 			<div
 				class="group flex items-center gap-1.5 rounded-xl px-3 py-2.75 transition-colors
 				       {isActive ? 'bg-green/10' : 'hover:bg-ink/5'}"
+				data-tour={isActive ? 'active-list' : undefined}
 			>
 				{#if isEditing}
 					<input
@@ -117,6 +119,7 @@
 						class="shrink-0 opacity-0 group-hover:opacity-30 hover:opacity-70!
 						       text-[11px] text-ink transition-opacity"
 						aria-label="Athainmnigh"
+						data-tour={isActive ? 'rename-list' : undefined}
 					>✎</button>
 					{#if listsStore.lists.length > 1}
 						<button
@@ -143,6 +146,7 @@
 		<button
 			onclick={addList}
 			class="flex items-center gap-2.5 text-[13px] text-ink/40 hover:text-ink/60 transition-colors"
+			data-tour="new-list"
 		>
 			<LayoutGrid size={14} />
 			Liosta nua
